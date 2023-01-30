@@ -9,56 +9,97 @@
 </head>
 
 <body>
-    <form action="#">
-        <input type="text" name="name" id="name">
-        <input type="submit" onclick="add()" value="Add">
-    </form>
+    <table id="mytable">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+    </table>
 
-    <ul id="list"></ul>
+    <br />
+    <input type="text" id="name" placeholder="Enter name">
+    <button onclick="create()">Create</button>
 
     <script>
-        function load() {
-            let list = document.getElementById('list');
-            list.removeChild();
+        function create() {
+            var name = document.querySelector("#name").value;
 
-            fetch('')
-                .then(result => {
-                    result.data.map(el => {
-                        list.append(`
-                        <li>
-                            <span>
-                                ${el.name}
-                                <button onclick="delete(${el.id})">Delete</button>
-                            </span>
-                        </li>`)
+            fetch("http://your-server-url/data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name: name })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    load();
+                    document.querySelector("#name").value = "";
+                });
+        }
+
+        function update(element) {
+            var tr = element.parentNode.parentNode;
+            var id = tr.querySelector("td:first-child").innerHTML;
+            var name = tr.querySelector("td:nth-child(2)").innerHTML;
+
+            fetch(`http://your-server-url/data/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name: name })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    load();
+                });
+        }
+
+        function remove(element) {
+            var tr = element.parentNode.parentNode;
+            var id = tr.querySelector("td:first-child").innerHTML;
+
+            fetch(`http://your-server-url/data/${id}`, {
+                method: "DELETE"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    load();
+                });
+        }
+
+
+        function load() {
+            fetch("http://your-server-url/data")
+                .then(response => response.json())
+                .then(data => {
+                    var table = document.querySelector("#mytable tbody");
+                    table.innerHTML = "";
+
+                    data.forEach(item => {
+                        var tr = document.createElement("tr");
+                        var idCell = document.createElement("td");
+                        var nameCell = document.createElement("td");
+                        var actionCell = document.createElement("td");
+
+                        idCell.innerHTML = item.id;
+                        nameCell.innerHTML = item.name;
+                        actionCell.innerHTML =
+                            '<button onclick="update(this)">Update</button>' +
+                            '<button onclick="remove(this)">Remove</button>';
+
+                        tr.appendChild(idCell);
+                        tr.appendChild(nameCell);
+                        tr.appendChild(actionCell);
+
+                        table.appendChild(tr);
                     });
                 });
         }
-        function add(e) {
-            e.preventDefault();
-
-            const data = { 
-                name: document.getElementById('name') 
-            };
-
-            fetch('https://example.com/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    console.log('Success:', data);
-
-                    load();
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }
     </script>
+
 </body>
 
 </html>
