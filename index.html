@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form action="#">
+        <input type="text" name="name" id="name">
+        <input type="submit" onclick="add()" value="Add">
+    </form>
+
+    <ul id="list"></ul>
+
+    <script>
+        function load() {
+            let list = document.getElementById('list');
+            list.removeChild();
+
+            fetch('')
+                .then(result => {
+                    result.data.map(el => {
+                        list.append(`
+                        <li>
+                            <span>
+                                ${el.name}
+                                <button onclick="delete(${el.id})">Delete</button>
+                            </span>
+                        </li>`)
+                    });
+                });
+        }
+        function add(e) {
+            e.preventDefault();
+
+            const data = { 
+                name: document.getElementById('name') 
+            };
+
+            fetch('https://example.com/profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Success:', data);
+
+                    load();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
